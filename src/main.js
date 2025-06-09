@@ -1,5 +1,5 @@
 import { createGallery, clearGallery, showLoader, hideLoader } from "./js/render-functions";
-import getImageById from "./js/pixabay-api";
+import getImagesByQuery from "./js/pixabay-api";
 import iziToast from "izitoast";
 import "izitoast/dist/css/iziToast.min.css";
 
@@ -15,16 +15,17 @@ function submitForm(event) {
     let value = formData.get('search-text').trim();
 
     if (value == "") {
-        alert("NONONO");
+        iziToast.error({
+            title: 'Error',
+            message: 'request can`t be empty'
+        });
         return;
     }
     showLoader();
     clearGallery();
 
-    getImageById(value)
-        .then(response => response.data.hits)
+    getImagesByQuery(value)
         .then(response => {
-            hideLoader();
             if (response.length == 0) {
                 iziToast.error({
                     title: 'Error',
@@ -34,6 +35,14 @@ function submitForm(event) {
                 createGallery(response);
             }
         })
-        .catch(error => console.log(error));
+        .catch(error =>
+            iziToast.error({
+                title: 'Error',
+                message: `${error}`,
+            })
+        )
+        .finally(() => {
+            hideLoader();
+        });
 
 }
